@@ -1,0 +1,65 @@
+MedInc,HouseAge,AveRooms,AveBedrms,Population,MedianHouseValue # type: ignore
+8.3252,41,6.9841,1.0238,322,452600
+8.3014,21,6.2381,0.9719,2401,358500
+
+import numpy as np # type: ignore
+
+class LinearRegressionScratch:
+    def __init__(self):
+        self.weights = None
+        self.bias = 0
+
+    def fit(self, X, y, lr=0.01, epochs=1000):
+        n_samples, n_features = X.shape
+        self.weights = np.zeros(n_features)
+        self.bias = 0
+
+        for _ in range(epochs):
+            y_predicted = np.dot(X, self.weights) + self.bias
+            dw = (1/n_samples) * np.dot(X.T, (y_predicted - y))
+            db = (1/n_samples) * np.sum(y_predicted - y)
+
+            self.weights -= lr * dw
+            self.bias -= lr * db
+
+    def predict(self, X):
+        return np.dot(X, self.weights) + self.bias
+import pandas as pd
+import numpy as np
+from linear_regression import LinearRegressionScratch
+
+# Load dataset
+data = pd.read_csv('data/housing.csv')
+
+# Select features and target
+X = data[['MedInc', 'HouseAge', 'AveRooms', 'AveBedrms', 'Population']].values
+y = data['MedianHouseValue'].values
+
+# Normalize the features (optional but helpful)
+X = (X - X.mean(axis=0)) / X.std(axis=0)
+
+# Train-test split
+split = int(0.8 * len(X))
+X_train, X_test = X[:split], X[split:]
+y_train, y_test = y[:split], y[split:]
+
+# Train model
+model = LinearRegressionScratch()
+model.fit(X_train, y_train, lr=0.01, epochs=1000)
+
+# CLI prediction
+print("Enter values to predict house price:")
+med_inc = float(input("Median Income: "))
+house_age = float(input("House Age: "))
+avg_rooms = float(input("Average Rooms: "))
+avg_bedrms = float(input("Average Bedrooms: "))
+population = float(input("Population: "))
+
+# Prepare input
+input_data = np.array([med_inc, house_age, avg_rooms, avg_bedrms, population])
+input_data = (input_data - X.mean(axis=0)) / X.std(axis=0)  # Normalize
+
+# Predict
+prediction = model.predict(input_data.reshape(1, -1))
+print(f"\n🏠 Estimated House Price: ${prediction[0]:,.2f}")
+pip install pandas numpy
